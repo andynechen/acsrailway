@@ -1,12 +1,21 @@
-FROM debian
-RUN apt update
-RUN apt install ssh wget npm -y
-RUN  npm install -g wstunnel
-RUN mkdir /run/sshd 
-RUN echo 'wstunnel -s 0.0.0.0:9527 &' >>/163.sh
-RUN echo '/usr/sbin/sshd -D' >>/163.sh
-RUN echo 'PermitRootLogin yes' >>  /etc/ssh/sshd_config 
-RUN echo root:Acs810606|chpasswd
-RUN chmod 755 /163.sh
-EXPOSE 80
-CMD  /163.sh
+FROM ubuntu:20.04
+
+RUN apt-get update; \
+        DEBIAN_FRONTEND=noninteractive apt-get install gnupg screen wget sudo git software-properties-common -y
+
+RUN wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -; \
+        add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/
+
+RUN apt-get update; \
+        DEBIAN_FRONTEND=noninteractive apt-get install adoptopenjdk-11-openj9-jre -y; \
+        wget "https://github.com/tsl0922/ttyd/releases/download/1.6.3/ttyd.x86_64" && mv ttyd.x86_64 /usr/bin/ttyd && chmod +x /usr/bin/ttyd; \
+        rm -rf /var/lib/apt/lists/*
+
+
+WORKDIR /root
+
+ENV LANG=C.UTF-8
+
+EXPOSE 9527
+
+CMD ["sh", "-c", "/usr/bin/ttyd -c ${USERNAME:-andy}:${PASSWORD:-acs810606} -p ${PORT:-9527} bash"]
