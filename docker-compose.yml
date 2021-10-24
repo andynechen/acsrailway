@@ -1,5 +1,5 @@
 services:
-  acsrly:
+    acs:
     build: .
     ports:
-      - 80:80
+      - "9527:9527"
